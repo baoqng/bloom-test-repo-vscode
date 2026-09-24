@@ -649,8 +649,6 @@ function getActualStartIndex<T>(array: T[], start: number): number {
 	return start < 0 ? Math.max(start + array.length, 0) : Math.min(start, array.length);
 }
 
-
-
 /**
  * When comparing two values,
  * a negative number indicates that the first value is less than the second,
@@ -946,4 +944,25 @@ export function sum(array: readonly number[]): number {
 
 export function sumBy<T>(array: readonly T[], selector: (value: T) => number): number {
 	return array.reduce((acc, value) => acc + selector(value), 0);
+}
+
+/**
+ * Splits the input array into sub-arrays of at most `chunkSize` elements.
+ * The last chunk may be smaller if the array length is not evenly divisible by chunkSize.
+ *
+ * @param array The input array to split.
+ * @param chunkSize The maximum number of elements per chunk. Must be a positive integer.
+ * @returns An array of sub-arrays, each containing at most `chunkSize` elements.
+ * @throws TypeError if `chunkSize` is not a positive integer.
+ */
+export function splitIntoChunks<T>(array: T[], chunkSize: number): T[][] {
+	if (typeof chunkSize !== 'number' || !Number.isInteger(chunkSize) || chunkSize <= 0) {
+		throw new TypeError(`chunkSize must be a positive integer, got: ${chunkSize}`);
+	}
+
+	const result: T[][] = [];
+	for (let i = 0; i < array.length; i += chunkSize) {
+		result.push(array.slice(i, i + chunkSize));
+	}
+	return result;
 }
