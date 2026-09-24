@@ -176,6 +176,27 @@ export namespace Iterable {
 		return [consumed, { [Symbol.iterator]() { return iterator; } }];
 	}
 
+	/**
+	 * Skips the first n elements of data and yields all remaining elements in order.
+	 * n must be a non-negative integer; throws TypeError for wrong types, Error for business rule violations.
+	 */
+	export function* skip<T>(data: Iterable<T>, n: number): Iterable<T> {
+		if (typeof n !== 'number' || !Number.isInteger(n)) {
+			throw new TypeError('n must be an integer');
+		}
+		if (n < 0) {
+			throw new Error('n must be a non-negative integer');
+		}
+		let remaining = n;
+		for (const element of data) {
+			if (remaining > 0) {
+				remaining--;
+			} else {
+				yield element;
+			}
+		}
+	}
+
 	export async function asyncToArray<T>(iterable: AsyncIterable<T>): Promise<T[]> {
 		const result: T[] = [];
 		for await (const item of iterable) {
