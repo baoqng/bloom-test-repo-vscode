@@ -119,3 +119,49 @@ export function randomChance(p: number): boolean {
 	assert(p >= 0 && p <= 1, 'p must be between 0 and 1');
 	return Math.random() < p;
 }
+
+/**
+ * Rounds `value` to `places` decimal places using half-up rounding.
+ *
+ * @param value  The number to round.
+ * @param places The number of decimal places (must be a non-negative safe integer).
+ * @throws {RangeError} If `places` is negative, not a safe integer, or not a number.
+ * @throws {RangeError} If `value` is not a number type.
+ */
+export function roundToDecimal(value: number, places: number): number {
+	if (typeof value !== 'number') {
+		throw new RangeError(`value must be a number, got ${typeof value}`);
+	}
+	if (typeof places !== 'number') {
+		throw new RangeError(`places must be a number, got ${typeof places}`);
+	}
+	if (!Number.isSafeInteger(places)) {
+		throw new RangeError(`places must be a safe integer, got ${places}`);
+	}
+	if (places < 0) {
+		throw new RangeError(`places must be non-negative, got ${places}`);
+	}
+
+	// Handle non-finite values: NaN, Infinity, -Infinity pass through as-is
+	if (!Number.isFinite(value)) {
+		return value;
+	}
+
+	// Use the exponential string trick to avoid floating-point drift.
+	// This implements half-up rounding (round half away from zero for positive,
+	// round half toward positive infinity — i.e., -0.5 rounds to 0, not -1).
+	//
+	// Half-up: floor(x + 0.5) — this rounds ties toward +Infinity.
+	const factor = Math.pow(10, places);
+	const shifted = value * factor;
+
+	// Half-up: add 0.5 then floor.
+	const rounded = Math.floor(shifted + 0.5) / factor;
+
+	// Normalize -0 to +0 as per the behavioral contract.
+	if (rounded === 0) {
+		return 0;
+	}
+
+	return rounded;
+}
