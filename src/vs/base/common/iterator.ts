@@ -191,4 +191,15 @@ export namespace Iterable {
 		}
 		return result;
 	}
+
+	export function takeWhile<T, R extends T>(data: Iterable<T>, predicate: (element: T) => element is R): Iterable<R>;
+	export function takeWhile<T>(data: Iterable<T>, predicate: (element: T) => boolean): Iterable<T>;
+	export function* takeWhile<T>(data: Iterable<T>, predicate: (element: T) => boolean): Iterable<T> {
+		for (const element of data) {
+			if (!predicate(element)) {
+				return;
+			}
+			yield element;
+		}
+	}
 }
