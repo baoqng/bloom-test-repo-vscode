@@ -191,4 +191,31 @@ export namespace Iterable {
 		}
 		return result;
 	}
+
+	export function chunked<T>(iterable: Iterable<T>, size: number): Iterable<T[]> {
+		if (!Number.isInteger(size) || size <= 0) {
+			throw new TypeError(`size must be a positive integer, got ${size}`);
+		}
+		return {
+			[Symbol.iterator](): Iterator<T[]> {
+				const iterator = iterable[Symbol.iterator]();
+				return {
+					next(): IteratorResult<T[]> {
+						const chunk: T[] = [];
+						for (let i = 0; i < size; i++) {
+							const result = iterator.next();
+							if (result.done) {
+								break;
+							}
+							chunk.push(result.value);
+						}
+						if (chunk.length === 0) {
+							return { value: undefined as unknown as T[], done: true };
+						}
+						return { value: chunk, done: false };
+					}
+				};
+			}
+		};
+	}
 }
