@@ -83,3 +83,24 @@ export function* iterableMapFilter<TSource, TDest>(
 		}
 	}
 }
+
+export function distinct<T>(iterable: Iterable<T>, keyFn?: (item: T) => unknown): Iterable<T> {
+	return {
+		[Symbol.iterator](): Iterator<T> {
+			const seen = new Set<unknown>();
+			const resolvedKeyFn: (item: T) => unknown = keyFn !== undefined ? keyFn : (item: T) => item;
+
+			function* generate(): Generator<T> {
+				for (const item of iterable) {
+					const key = resolvedKeyFn(item);
+					if (!seen.has(key)) {
+						seen.add(key);
+						yield item;
+					}
+				}
+			}
+
+			return generate();
+		},
+	};
+}
