@@ -30,6 +30,11 @@ export class TerminalResizeDebouncer extends Disposable {
 		Constants.DebounceResizeXDelay,
 	));
 
+	private readonly _debounceResizeYScheduler = this._register(new RunOnceScheduler(
+		() => this._resizeYCallback(this._latestY),
+		Constants.DebounceResizeXDelay,
+	));
+
 	constructor(
 		private readonly _isVisible: () => boolean,
 		private readonly _getXterm: () => XtermTerminal | undefined,
