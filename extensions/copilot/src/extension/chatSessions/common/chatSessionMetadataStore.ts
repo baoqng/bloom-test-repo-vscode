@@ -190,3 +190,43 @@ export interface IChatSessionMetadataStore {
 	 */
 	getWorktreeSessions(folder: vscode.Uri): string[];
 }
+
+/**
+ * Reassigns sessions from one workspace folder to another by updating their
+ * workspace folder metadata. When a VS Code workspace folder is renamed, existing
+ * sessions remain keyed under the old folder URI. This function iterates over every
+ * session associated with the old folder and rewrites their workspace-folder entry
+ * to the new path.
+ *
+ * @param store The metadata store providing getSessionIdsForFolder and storeWorkspaceFolderInfo.
+ * @param oldFolderUri The original folder URI (with fsPath property).
+ * @param newFolderUri The new folder URI (with fsPath property).
+ * @returns An array of session IDs that were reassigned. If no sessions were
+ *          associated with the old folder, returns an empty array without writing
+ *          to the store.
+ */
+export async function reassignSessionsToFolder(
+	store: {
+		getSessionIdsForFolder(folder: { fsPath: string }): string[];
+		storeWorkspaceFolderInfo(sessionId: string, entry: { folderPath: string; timestamp: number }): Promise<void>;
+	},
+	oldFolderUri: { fsPath: string },
+	newFolderUri: { fsPath: string }
+): Promise<string[]> {
+	const sessionIds = store.getSessionIdsForFolder(oldFolderUri);
+
+	if (sessionIds.length === 0) {
+		return [];
+	}
+
+	await Promise.all(
+		sessionIds.map(sessionId =>
+			store.storeWorkspaceFolderInfo(sessionId, {
+				folderPath: newFolderUri.fsPath,
+				timestamp: Date.now()
+			})
+		)
+	);
+
+	return sessionIds;
+}
